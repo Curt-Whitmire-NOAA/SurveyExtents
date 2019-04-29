@@ -22,10 +22,9 @@ extents <- extents[extents@data$Year != "2000",]
 extents <- extents[extents@data$Year != "2001",]
 summary(extents)
 
-library(osmdata)
 library(tmap)
-vignette(package = "tmap") # available vignettes in tmap
-vignette("tmap-nutshell")
+# vignette(package = "tmap") # available vignettes in tmap
+# vignette("tmap-nutshell")
 
 # plot
 current.mode <- tmap_mode("plot")
