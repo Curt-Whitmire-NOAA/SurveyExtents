@@ -28,8 +28,10 @@ library(tmap)
 
 # plot
 current.mode <- tmap_mode("plot")
-tm_basemap(leaflet::providers$Esri.WorldShadedRelief) +
-  tm_shape(extents) +
+tmap_style("white")
+# current.mode <- tmap_mode("view")
+# tm_basemap(leaflet::providers$Esri.WorldShadedRelief) +
+tm_shape(extents) +
   tm_fill("Year", thres.poly = 0) +
   tm_facets("SurveyYear", nrow = 1, free.coords = FALSE) +
   tm_layout(legend.show = FALSE, title.position = c("center", "center"), title.size = 20)
