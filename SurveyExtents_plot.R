@@ -16,6 +16,9 @@ coast <- readOGR("WCstates_BC_Mex_100K.shp")
 EEZ <- readOGR("pacific_eez_segmented.shp")
 sabPts <- st_as_sf(PacFIN.Logbook.Sab.Tows, coords = c("Best_Long","Best_Lat"))
 # Add field for faceting on geographic subregion (WA, OR, NorCal, CenCal, SoCal)
+sabPts %>% 
+  filter(Best_Lat >= 46 & Best_Lat < 50) %>% 
+  mutate(region = "Washington")
 
 # filter on survey
 summary(extents)
