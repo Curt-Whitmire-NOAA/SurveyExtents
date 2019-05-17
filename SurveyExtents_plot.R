@@ -1,9 +1,11 @@
 library(rstudioapi)
+library(dplyr)
 library(rgeos) # "Geomegry Engine- Open Source (GEOS)"
 library(rgdal) # "Geospatial Data Analysis Library (GDAL)"
 library(sp)
 library(sf)
 library(tmap)
+library(dismo)
 
 # Set working directory
 current_path <- getActiveDocumentContext()$path
@@ -16,7 +18,7 @@ coast <- readOGR("WCstates_BC_Mex_100K.shp")
 EEZ <- readOGR("pacific_eez_segmented.shp")
 
 # Add field for faceting on geographic subregion (WA, OR, NorCal, CenCal, SoCal)
-sabTows <- PacFIN.Logbook.Sab.Tows %>%
+sabTows <- PacFIN.Logbook.Sab.Tows.May.17.2019 %>%
   mutate(
     region = case_when(
     Best_Lat > 46 ~ "1-Washington",
@@ -27,8 +29,10 @@ sabTows <- PacFIN.Logbook.Sab.Tows %>%
   ))
 
 # Convert PacFIN hauls to shape object
-sabPts <- st_as_sf(sabTows, coords = c("Best_Long","Best_Lat"), crs = "+proj=longlat +datum=WGS84")
+sabPts <- st_as_sf(sabTows, coords = c("Best_Long","Best_Lat"), crs = 4326)
 
+# Create convex hull of positive hauls
+sabHull <- dismo::convHull(sabPts)
 # filter on survey
 summary(extents)
 extents <- extents[extents@data$Survey == "AFSC Triennial",]
