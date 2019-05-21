@@ -5,7 +5,6 @@ library(rgdal) # "Geospatial Data Analysis Library (GDAL)"
 library(sp)
 library(sf)
 library(tmap)
-library(dismo)
 
 # Set working directory
 current_path <- getActiveDocumentContext()$path
@@ -31,8 +30,18 @@ sabTows <- PacFIN.Logbook.Sab.Tows.May.17.2019 %>%
 # Convert PacFIN hauls to shape object
 sabPts <- st_as_sf(sabTows, coords = c("Best_Long","Best_Lat"), crs = 4326)
 
-# Create convex hull of positive hauls
+# Create convex hull of positive hauls; need to use function that output spatial object
+library(dismo)
 sabHull <- dismo::convHull(sabPts)
+sabHull <- chull(sabPts)
+library(spatstat)
+sabHull <- spatstat::convexhull.xy(sabTows$Best_Long, sabTows$Best_Lat)
+sabPly <- polygon(sabHull)
+
+# plot
+tm_shape(extents) + tm_fill() + 
+  tm_shape(sabHull) + tm_fill()
+
 # filter on survey
 summary(extents)
 extents <- extents[extents@data$Survey == "AFSC Triennial",]
