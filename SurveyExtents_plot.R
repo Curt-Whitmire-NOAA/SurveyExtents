@@ -38,6 +38,11 @@ library(spatstat)
 sabHull <- spatstat::convexhull.xy(sabTows$Best_Long, sabTows$Best_Lat)
 sabPly <- polygon(sabHull)
 
+# Calculate kernel density of positive hauls
+library(MASS)
+sabDens <- MASS::kde2d(as.numeric(sabTows$Best_Long), as.numeric(sabTows$Best_Lat), n=0.1, lims = c(c(-126,-116),c(32,49)))
+plot(sabDens)
+
 # plot
 tm_shape(extents) + tm_fill() + 
   tm_shape(sabHull) + tm_fill()
@@ -56,15 +61,18 @@ extents <- extents[extents@data$Survey == "NWFSC Shelf-Slope",]
 pdf(file = "AFSC_Slope_AllYrs.pdf", width = 10, height = 10)
 pdf(file = "Triennial_AllYrs.pdf", width = 10, height = 10)
 pdf(file = "NWFSC_Slope_AllYrs.pdf", width = 10, height = 6)
+pdf(file = "NWFSC_Combined_2003.pdf", width = 5, height = 10)
+
 # plot
 current.mode <- tmap_mode("plot")
 tm_shape(extents) + tm_fill("Year", thres.poly = 0) + 
-  tm_facets(by = "SurveyYear", nrow = 2, free.coords = FALSE) +
+  # tm_facets(by = "SurveyYear", nrow = 1, free.coords = FALSE) +
   tm_shape(coast) + tm_polygons() +
   tm_shape(EEZ) + tm_lines() +
   tm_layout(legend.show = FALSE, 
-            title.position = c("center", "center"), title.size = 20, 
+            panel.show = TRUE, panel.labels = "NWFSC Combined 2003-", panel.label.size = 1,
             panel.label.bg.color = "white", panel.label.fontface = "bold"
+            # title.position = c("center", "center"), title.size = 20,
             )
 # Close the pdf file
 dev.off()
