@@ -61,7 +61,7 @@ extents <- extents[extents@data$Survey == "NWFSC Shelf-Slope",]
 pdf(file = "AFSC_Slope_AllYrs.pdf", width = 10, height = 10)
 pdf(file = "Triennial_AllYrs.pdf", width = 10, height = 10)
 pdf(file = "NWFSC_Slope_AllYrs.pdf", width = 10, height = 6)
-pdf(file = "NWFSC_Combined_2003.pdf", width = 5, height = 10)
+pdf(file = "NWFSC_WCGBTS.pdf", width = 5, height = 10)
 
 # plot
 current.mode <- tmap_mode("plot")
@@ -70,7 +70,7 @@ tm_shape(extents) + tm_fill("Year", thres.poly = 0) +
   tm_shape(coast) + tm_polygons() +
   tm_shape(EEZ) + tm_lines() +
   tm_layout(legend.show = FALSE, 
-            panel.show = TRUE, panel.labels = "NWFSC Combined 2003-", panel.label.size = 1,
+            panel.show = TRUE, panel.labels = "NWFSC West Coast Groundfish Bottom Trawl", panel.label.size = 1,
             panel.label.bg.color = "white", panel.label.fontface = "bold"
             # title.position = c("center", "center"), title.size = 20,
             )
