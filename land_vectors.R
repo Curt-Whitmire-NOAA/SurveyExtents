@@ -76,6 +76,3 @@ sp::plot(bs_land)
 
 # Combine and save shapefiles
 save(bs_bathy, bs_land, file = paste(outPath, "bs_shapes.rda", sep = "/"), compress = "xz")
-
-
-
