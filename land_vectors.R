@@ -1,4 +1,7 @@
 # Script to process vector coastline from NaturalEarth and GEBCO
+# based on workflow in {ggOceanMaps} User Manual
+# Author: Mikko Vihtakari (Institute of Marine Research)
+# https://mikkovihtakari.github.io/ggOceanMaps/articles/ggOceanMaps.html
 
 citation("ggOceanMaps")
 #> 
