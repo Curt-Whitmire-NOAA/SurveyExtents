@@ -26,26 +26,85 @@ outPath <- "/Users/curt.whitmire/Documents/github/_data/GIS" # Data output locat
 gridNEP <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/Grid_Base_jCentroidInfo_dd.shp")
 
 # load raster
-bathy <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/ETOPO_v2022_sub.tiff")
+bathyETOPO <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/ETOPO_v2022/ETOPO_v2022_sub.tiff")
+bathyGEBCO <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/GEBCO_01_Dec_2022_358306d053ed/gebco_2022_n51.0_s30.0_w-130.0_e-116.0.tif")
 
 # crop the raster
-bathyNEP <- stars::st_crop(bathy, gridNEP)
-plot(bathyNEP)
+bathyETOPO_crop <- st_crop(bathyETOPO, gridNEP)
+plot(bathyETOPO_crop)
 
-# Extract the underlying depth values for each cell in the polygon grid
+# Extract the underlying depth values (ETOPO) for each cell in the polygon grid
 gridNEP <-
   gridNEP %>% mutate(
-    zAvg = geobgu::raster_extract(bathyNEP, gridNEP, fun = mean, na.rm = TRUE),
-    zMax = geobgu::raster_extract(bathyNEP, gridNEP, fun = max, na.rm = TRUE),
-    zMin = geobgu::raster_extract(bathyNEP, gridNEP, fun = min, na.rm = TRUE),
+    zAvg_m_ETO = -1 * geobgu::raster_extract(bathyETOPO_crop, gridNEP, fun = mean, na.rm = TRUE),
+    zMin_m_ETO = -1 * geobgu::raster_extract(bathyETOPO_crop, gridNEP, fun = max, na.rm = TRUE),
+    zMax_m_ETO = -1 * geobgu::raster_extract(bathyETOPO_crop, gridNEP, fun = min, na.rm = TRUE)
+  ) %>% mutate(
+    zAvg_f_ETO = zAvg_m_ETO * 0.546807,
+    zMin_f_ETO = zMin_m_ETO * 0.546807,
+    zMax_f_ETO = zMax_m_ETO * 0.546807
   )
 
-gridNEP %>%
-  st_set_geometry(NULL) %>%
-  knitr::kable()
+# crop the raster
+bathyGEBCO_crop <- st_crop(bathyGEBCO, gridNEP)
+plot(bathyGEBCO_crop)
 
+# Extract the underlying depth values (GEBCO) for each cell in the polygon grid
+gridNEP <-
+  gridNEP %>% mutate(
+    zAvg_m_GEB = -1 * geobgu::raster_extract(bathyGEBCO_crop, gridNEP, fun = mean, na.rm = TRUE),
+    zMin_m_GEB = -1 * geobgu::raster_extract(bathyGEBCO_crop, gridNEP, fun = max, na.rm = TRUE),
+    zMax_m_GEB = -1 * geobgu::raster_extract(bathyGEBCO_crop, gridNEP, fun = min, na.rm = TRUE)
+  ) %>% mutate(
+    zAvg_f_GEB = zAvg_m_GEB * 0.546807,
+    zMin_f_GEB = zMin_m_GEB * 0.546807,
+    zMax_f_GEB = zMax_m_GEB * 0.546807
+  )
+
+# Add field strata assignment based on each bathy dataset min/max values
+# NEW Method of calculating strata values; need to verify this is correct method
+gridNEP <-
+  gridNEP %>% mutate(stratETOPO = case_when(
+    !(is.na(StnCode)) & zAvg_f_ETO >= 30 & zAvg_f_ETO <100 ~ "30-100",
+    !(is.na(StnCode)) & zAvg_f_ETO >= 100 & zAvg_f_ETO <300 ~ "100-300",
+    !(is.na(StnCode)) & zAvg_f_ETO >= 300 & zAvg_f_ETO <700 ~ "300-700")
+  ) %>% mutate(stratGEBCO = case_when(
+    !(is.na(StnCode)) & zAvg_f_GEB >= 30 & zAvg_f_GEB <100 ~ "30-100",
+    !(is.na(StnCode)) & zAvg_f_GEB >= 100 & zAvg_f_GEB <300 ~ "100-300",
+    !(is.na(StnCode)) & zAvg_f_GEB >= 300 & zAvg_f_GEB <700 ~ "300-700")
+  )
+
+# OLD Method of calculating strata values
+gridNEP <-
+  gridNEP %>% mutate(stratETOPO = case_when(
+    !(is.na(StnCode)) & zMin_f_ETO >= 30 & zMax_f_ETO <100 ~ "30-100",
+    !(is.na(StnCode)) & zMin_f_ETO >= 100 & zMax_f_ETO <300 ~ "100-300",
+    !(is.na(StnCode)) & zMin_f_ETO >= 300 & zMax_f_ETO <700 ~ "300-700")
+  ) %>% mutate(stratGEBCO = case_when(
+    !(is.na(StnCode)) & zMin_f_GEB >= 30 & zMax_f_GEB <100 ~ "30-100",
+    !(is.na(StnCode)) & zMin_f_GEB >= 100 & zMax_f_GEB <300 ~ "100-300",
+    !(is.na(StnCode)) & zMin_f_GEB >= 300 & zMax_f_GEB <700 ~ "300-700")
+  )
+
+# Show table summary
 summary(gridNEP)
 
+# Check for any missing strata values for WCGBTS cells
+grid_sub <- 
+  gridNEP %>% 
+  select(StnCode,StratumZ,stratETOPO,contains("f_ETO"),stratGEBCO,contains("f_GEB")) %>% 
+  filter(!(is.na(StnCode)) & (is.na(stratETOPO) | is.na(stratGEBCO))) %>% 
+  arrange(zMin_f_ETO,zMin_f_GEB)
+  
+
 # Save the output grid in shapefile and RDA formats
-save(gridNEP, bathyNEP, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
-st_write(gridNEP, paste0(outPath, "/", "grid_NEPacific_wBathy.shp"))
+save(gridNEP, bathyETOPO_crop, bathyGEBCO_crop, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
+st_write(gridNEP, paste0(outPath, "/", "grid_NEPacific_wBathy.shp"), append=FALSE, delete_layer = TRUE)
+
+# Temporary work
+gridNEP <- 
+  gridNEP %>% rename(
+    stratETOPO = strataETOPO,
+    stratGEBCO = strataGEBCO
+  )
+
