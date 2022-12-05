@@ -26,10 +26,37 @@ outPath <- "/Users/curt.whitmire/Documents/github/_data/GIS" # Data output locat
 gridNEP <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/Grid_Base_jCentroidInfo_dd.shp")
 
 # load raster
+bathyNCEI <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/NCEI_GridExtract/NCEI_GridExtract_20221205.tif")
+bathyNCEIN <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/NCEI_GridExtract/NCEI_GridExtract_North.tiff")
+bathyNCEIS <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/NCEI_GridExtract/NCEI_GridExtract_South.tiff")
 bathyETOPO <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/ETOPO_v2022/ETOPO_v2022_sub.tiff")
 bathyGEBCO <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/GEBCO_01_Dec_2022_358306d053ed/gebco_2022_n51.0_s30.0_w-130.0_e-116.0.tif")
 
-# crop the raster
+# crop the raster (NCEI)
+bathyNCEI_crop <- st_crop(bathyNCEI, gridNEP)
+plot(bathyNCEI_crop)
+
+# crop the raster (NCEI-North); breaking up raster into smaller pieces
+bathyNCEIN_crop <- st_crop(bathyNCEIN, gridNEP)
+plot(bathyNCEIN_crop)
+
+# crop the raster (NCEI-South); breaking up raster into smaller pieces
+bathyNCEIS_crop <- st_crop(bathyNCEIS, gridNEP)
+plot(bathyNCEIS_crop)
+
+# Extract the underlying depth values (NCEI) for each cell in the polygon grid
+gridNEP <-
+  gridNEP %>% mutate(
+    zAvg_m_CRM = -1 * geobgu::raster_extract(bathyNCEI, gridNEP, fun = mean, na.rm = TRUE),
+    zMin_m_CRM = -1 * geobgu::raster_extract(bathyNCEI, gridNEP, fun = max, na.rm = TRUE),
+    zMax_m_CRM = -1 * geobgu::raster_extract(bathyNCEI, gridNEP, fun = min, na.rm = TRUE)
+  ) %>% mutate(
+    zAvg_f_CRM = zAvg_m_CRM * 0.546807,
+    zMin_f_CRM = zMin_m_CRM * 0.546807,
+    zMax_f_CRM = zMax_m_CRM * 0.546807
+  )
+
+# crop the raster (ETOPO)
 bathyETOPO_crop <- st_crop(bathyETOPO, gridNEP)
 plot(bathyETOPO_crop)
 
@@ -45,7 +72,7 @@ gridNEP <-
     zMax_f_ETO = zMax_m_ETO * 0.546807
   )
 
-# crop the raster
+# crop the raster (GEBCO)
 bathyGEBCO_crop <- st_crop(bathyGEBCO, gridNEP)
 plot(bathyGEBCO_crop)
 
