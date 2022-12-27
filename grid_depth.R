@@ -22,6 +22,9 @@ print(getwd())
 
 outPath <- "/Users/curt.whitmire/Documents/github/_data/GIS" # Data output location
 
+# If needed, load existing RDA file
+# load("~/Documents/github/_data/GIS/grid_NEPacific_wBathy.rda")
+
 # load shapefiles
 gridNEP <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/Grid_Base_jCentroidInfo_dd.shp")
 
