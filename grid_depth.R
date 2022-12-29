@@ -22,8 +22,9 @@ print(getwd())
 
 outPath <- "/Users/curt.whitmire/Documents/github/_data/GIS" # Data output location
 
-# If needed, load existing RDA file
-# load("~/Documents/github/_data/GIS/grid_NEPacific_wBathy.rda")
+# If needed, load existing RDA files
+load("~/Documents/github/_data/GIS/grid_NEPacific_wBathy.rda")
+load("~/Documents/github/_data/GIS/bs_shapes.rda")
 
 # load shapefiles
 gridNEP <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/Grid_Base_jCentroidInfo_dd.shp")
@@ -126,10 +127,22 @@ grid_sub <-
   filter(!(is.na(StnCode)) & (is.na(stratETOPO) | is.na(stratGEBCO))) %>% 
   arrange(zMin_f_ETO,zMin_f_GEB)
   
+# Project polygons to common spatial reference (TM)
+rca <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/TrawlRCA_2019_poly/TrawlRCA_2019_poly.shp")
+gridNEP_proj <- st_transform(gridNEP, crs = st_crs(rca))
+bs_land_proj <- st_as_sf(bs_land) %>% 
+  st_transform(bs_land_proj, crs = st_crs(rca))
+sp::plot(bs_land_proj)
+# Confirm common spatial reference
+st_crs(gridNEP_proj) == st_crs(bs_land_proj)
+# Clip land from grid polygons
+gridNEP_clip <- st_crop(gridNEP_proj$geometry, bs_land_proj$geometry)
+plot(gridNEP_clip)
 
 # Save the output grid in shapefile and RDA formats
-save(gridNEP, bathyETOPO_crop, bathyGEBCO_crop, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
+save(gridNEP, gridNEP_clip, bathyETOPO_crop, bathyGEBCO_crop, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
 st_write(gridNEP, paste0(outPath, "/", "grid_NEPacific_wBathy.shp"), append=FALSE, delete_layer = TRUE)
+st_write(gridNEP_clip, paste0(outPath, "/", "grid_NEPacific_wBathy_clipLand.shp"), append=FALSE, delete_layer = TRUE)
 
 # Temporary work
 gridNEP <- 
