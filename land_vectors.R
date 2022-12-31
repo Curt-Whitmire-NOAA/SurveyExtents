@@ -1,7 +1,7 @@
 # Script to process vector coastline from NaturalEarth and GEBCO
-# based on workflow in {ggOceanMaps} User Manual
+# based on "Land shapes" workflow in {ggOceanMaps} User Manual
 # Author: Mikko Vihtakari (Institute of Marine Research)
-# https://mikkovihtakari.github.io/ggOceanMaps/articles/ggOceanMaps.html
+# https://mikkovihtakari.github.io/ggOceanMaps/articles/ggOceanMaps.html#custom-shapefiles
 
 citation("ggOceanMaps")
 #> 
@@ -22,10 +22,10 @@ citation("ggOceanMaps")
 #>   }
 
 # load requisite libraries
-library(rstudioapi)
+library(rstudioapi) # Safely Access the RStudio API
 library(rgdal) # "Geospatial Data Analysis Library (GDAL)"
 library(rgeos) # "Geomegry Engine- Open Source (GEOS)"
-library(sp)
+library(sp) # Classes and Methods for Spatial Data
 library(ggOceanMapsData)
 library(ggOceanMaps)
 
