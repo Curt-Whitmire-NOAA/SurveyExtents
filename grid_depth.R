@@ -3,8 +3,9 @@
 # Author: Luis D. Verde Arregoitia
 # https://luisdva.github.io/rstats/GIS-with-R/
 
-library(rstudioapi)
+library(rstudioapi) # Safely Access the RStudio API
 library(sf) # Simple Features for R
+library(sp) # Classes and Methods for Spatial Data
 library(rnaturalearth) # World Map Data from Natural Earth
 library(here) # A Simpler Way to Find Your Files
 library(stars) # Spatiotemporal Arrays, Raster and Vector Data Cubes
@@ -14,6 +15,7 @@ library(ggnewscale) # Multiple Fill and Color Scales in 'ggplot2'
 library(scico) # Colour Palettes Based on the Scientific Colour-Maps
 library(geobgu) # install from GitHub ("michaeldorman/geobgu")
 library(ggrepel) # Automatically Position Non-Overlapping Text Labels with 'ggplot2'
+library(smoothr) # Smooth and Tidy Spatial Features
 
 # Set working directories
 current_path <- getActiveDocumentContext()$path
@@ -127,27 +129,52 @@ grid_sub <-
   filter(!(is.na(StnCode)) & (is.na(stratETOPO) | is.na(stratGEBCO))) %>% 
   arrange(zMin_f_ETO,zMin_f_GEB)
   
-# Project polygons to common spatial reference (TM)
-rca <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/TrawlRCA_2019_poly/TrawlRCA_2019_poly.shp")
-gridNEP_proj <- st_transform(gridNEP, crs = st_crs(rca))
+## Project polygons to common spatial reference (TM or Albers?)
+# Read in projection files
+crsTM <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/TrawlRCA_2019_poly/TrawlRCA_2019_poly.shp")
+crsALB <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/DepthCountours_4Survey/DepthContours_4Survey_Albers.shp")
+
+# Project and add new area attribute field
+gridNEP_proj <- smoothr::densify(gridNEP, n = 3) %>% 
+  st_transform(gridNEP_proj, crs = st_crs(crsALB)) %>% 
+  mutate(area_orig = st_area(gridNEP_proj))
+summary(gridNEP_proj)
+
+# Project and add new area attribute field
 bs_land_proj <- st_as_sf(bs_land) %>% 
-  st_transform(bs_land_proj, crs = st_crs(rca))
-sp::plot(bs_land_proj)
+  smoothr::densify(bs_land_proj, max_distance = 1000) %>% 
+  st_transform(bs_land_proj, crs = st_crs(crsALB)) %>% 
+  mutate(area_orig = st_area(bs_land_proj))
+summary(bs_land_proj)
+
 # Confirm common spatial reference
 st_crs(gridNEP_proj) == st_crs(bs_land_proj)
-# Clip land from grid polygons
-gridNEP_clip <- st_crop(gridNEP_proj$geometry, bs_land_proj$geometry)
-plot(gridNEP_clip)
+
+# Perform appropriate geometry operation to output parts to report area proportions
+# https://geocompr.robinlovelace.net/geometry-operations.html
+
+
+# Transform back to GCS WGS84
+gridNEP_summ <- st_transform(gridNEP_proj, crs = 4326)
+gridNEP_crop2 <- st_transform(gridNEP_crop, crs = 4326)
 
 # Save the output grid in shapefile and RDA formats
-save(gridNEP, gridNEP_clip, bathyETOPO_crop, bathyGEBCO_crop, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
-st_write(gridNEP, paste0(outPath, "/", "grid_NEPacific_wBathy.shp"), append=FALSE, delete_layer = TRUE)
-st_write(gridNEP_clip, paste0(outPath, "/", "grid_NEPacific_wBathy_clipLand.shp"), append=FALSE, delete_layer = TRUE)
+save(gridNEP_proj, gridNEP_crop, bathyETOPO_crop, bathyGEBCO_crop, file = paste(outPath, "grid_NEPacific_wBathy.rda", sep = "/"), compress = "xz")
+sf::st_write(gridNEP_summ, paste0(outPath, "/", "grid_NEPacific_wBathy.shp"), append=FALSE, delete_layer = TRUE)
+sf::st_write(gridNEP_crop2, paste0(outPath, "/", "grid_NEPacific_wBathy_clipLand.shp"), append=FALSE, delete_layer = TRUE)
 
-# Temporary work
-gridNEP <- 
-  gridNEP %>% rename(
-    stratETOPO = strataETOPO,
-    stratGEBCO = strataGEBCO
-  )
+
+##### Temporary work
+
+## Testing various geometry operations
+
+# Crop land from grid polygons; removes portion of y in x
+gridNEP_crop <- st_crop(gridNEP_proj, bs_land_proj)
+plot(gridNEP_crop)
+# Clip land from grid polygons; not sure what this does
+gridNEP_clip <- st_difference(gridNEP_proj, bs_land_proj)
+plot(gridNEP_clip)
+# Intersect land and grid polygons; outputs just the intersecting features
+gridNEP_isct <- st_intersection(gridNEP_proj, bs_land_proj)
+plot(gridNEP_isct)
 
