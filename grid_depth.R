@@ -30,6 +30,7 @@ load("~/Documents/github/_data/GIS/bs_shapes.rda")
 
 # load shapefiles
 gridNEP <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/Grid_Base_jCentroidInfo_dd.shp")
+cca <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/CCA/CCA_20050101_ply_Albers.shp")
 
 # load raster
 bathyNCEI <- read_stars("/Users/curt.whitmire/Documents/github/_data/GIS/NCEI_GridExtract/NCEI_GridExtract_20221205.tif")
@@ -146,6 +147,13 @@ bs_land_proj <- st_as_sf(bs_land) %>%
   st_transform(bs_land_proj, crs = st_crs(crsALB)) %>% 
   mutate(area_orig = st_area(bs_land_proj))
 summary(bs_land_proj)
+
+# Project and add new area attribute field
+cca_proj <- st_as_sf(cca) %>% 
+  # smoothr::densify(cca_proj, max_distance = 1000) %>% 
+  # st_transform(cca_proj, crs = st_crs(crsALB)) %>% 
+  mutate(area_orig = st_area(.))
+summary(cca_proj)
 
 # Confirm common spatial reference
 st_crs(gridNEP_proj) == st_crs(bs_land_proj)
