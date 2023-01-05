@@ -27,7 +27,7 @@ library(rgdal) # "Geospatial Data Analysis Library (GDAL)"
 library(rgeos) # "Geomegry Engine- Open Source (GEOS)"
 library(sp) # Classes and Methods for Spatial Data
 library(ggOceanMapsData)
-library(ggOceanMaps)
+library(ggOceanMaps) # Plot data on oceanographic maps using ggplot2
 
 # # Set working directory and relevant paths
 current_path <- getActiveDocumentContext()$path
