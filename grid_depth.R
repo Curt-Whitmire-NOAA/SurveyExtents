@@ -59,7 +59,7 @@ bathyNCEIS_crop <- st_crop(bathyNCEIS, gridNEP)
 plot(bathyNCEIS_crop)
 
 # Extract the underlying depth values (NCEI) for each cell in the polygon grid
-gridNEP2 <-
+gridNEP <-
   gridNEP %>% mutate(
     zAvg_m_CRM = -1 * geobgu::raster_extract(bathyCRM, gridNEP, fun = mean, na.rm = TRUE),
     zMin_m_CRM = -1 * geobgu::raster_extract(bathyCRM, gridNEP, fun = max, na.rm = TRUE),
@@ -69,6 +69,11 @@ gridNEP2 <-
     zMin_f_CRM = zMin_m_CRM * 0.546807,
     zMax_f_CRM = zMax_m_CRM * 0.546807
   )
+
+# Test that each WCGBTS cell has CRM depth data
+gridTest <- gridNEP2 %>% 
+  filter(!is.na(StratumZ))
+summary(gridTest)
 
 # crop the raster (ETOPO)
 bathyETOPO_crop <- st_crop(bathyETOPO, gridNEP)
