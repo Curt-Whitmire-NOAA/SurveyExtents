@@ -142,7 +142,7 @@ grid_sub <-
   filter(!(is.na(StnCode)) & (is.na(stratETOPO) | is.na(stratGEBCO))) %>% 
   arrange(zMin_f_ETO,zMin_f_GEB)
   
-### Peformn intersections to include various attributes
+### Perform intersections to include various attributes
 ## Project polygons to common spatial reference (TM or Albers?)
 # Read in projection files
 crsTM <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/TrawlRCA_2019_poly/TrawlRCA_2019_poly.shp")
