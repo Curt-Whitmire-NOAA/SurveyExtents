@@ -6,6 +6,7 @@
 library(sf)
 library(raster)
 library(stars)
+# library(gridExtra)
 
 # load shapefiles
 # gridBTSdd <- st_read("/Users/curt.whitmire/Documents/github/_data/GIS/WCGBTS_Grid_v2008_dd/WCGBTS_Grid_v2008_dd.shp")
@@ -37,8 +38,16 @@ nrow(x)
 r <- st_as_stars(x)
 r
 # Crop the raster by the shapefile
-r_crop <- r[gridBTSutm]
+r_crop <- r[gridBTSutm, crop=TRUE]
+# r_crop <- st_crop(r, gridBTSutm)
+dim(r)
+dim(r_crop)
 
 # Plot the rasters, side by side
+par(mfrow = c(1, 2))
 raster::plot(r)
 raster::plot(r_crop)
+par(mfrow = c(1,1))
+
+# Save output
+write_stars(r_crop, "WCGBTS_raster.tif")
