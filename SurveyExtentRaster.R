@@ -1,4 +1,4 @@
-# Script to generate bland raster for U.S. West Coast Continental Margin
+# Script to generate blank raster for U.S. West Coast Continental Margin
 # and clip to NMFS West Coast Groundfish Bottom Trawl Survey extent
 # Workflow adopted from https://rspatial.org/raster/pkg/3-objects.html, and
 # https://geobgu.xyz/r-2020/combining-rasters-and-vector-layers.html, and
