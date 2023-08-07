@@ -5,7 +5,7 @@
 
 library(rstudioapi) # Safely Access the RStudio API
 library(sf) # Simple Features for R
-library(sp) # Classes and Methods for Spatial Data
+# library(sp) # Classes and Methods for Spatial Data
 library(rnaturalearth) # World Map Data from Natural Earth
 library(here) # A Simpler Way to Find Your Files
 library(stars) # Spatiotemporal Arrays, Raster and Vector Data Cubes
@@ -107,8 +107,7 @@ gridNEP <-
     zMax_f_GEB = zMax_m_GEB * 0.546807
   )
 
-# Add field strata assignment based on each bathy dataset min/max values
-# NEW Method of calculating strata values; need to verify this is correct method
+# Add field strata assignment based on each bathy dataset mean values
 gridNEP <-
   gridNEP %>% mutate(stratETOPO = case_when(
     !(is.na(StnCode)) & zAvg_f_ETO >= 30 & zAvg_f_ETO <100 ~ "30-100",
@@ -119,18 +118,16 @@ gridNEP <-
     !(is.na(StnCode)) & zAvg_f_GEB >= 100 & zAvg_f_GEB <300 ~ "100-300",
     !(is.na(StnCode)) & zAvg_f_GEB >= 300 & zAvg_f_GEB <700 ~ "300-700")
   )
-
-# OLD Method of calculating strata values
-# gridNEP <-
-#   gridNEP %>% mutate(stratETOPO = case_when(
-#     !(is.na(StnCode)) & zMin_f_ETO >= 30 & zMax_f_ETO <100 ~ "30-100",
-#     !(is.na(StnCode)) & zMin_f_ETO >= 100 & zMax_f_ETO <300 ~ "100-300",
-#     !(is.na(StnCode)) & zMin_f_ETO >= 300 & zMax_f_ETO <700 ~ "300-700")
-#   ) %>% mutate(stratGEBCO = case_when(
-#     !(is.na(StnCode)) & zMin_f_GEB >= 30 & zMax_f_GEB <100 ~ "30-100",
-#     !(is.na(StnCode)) & zMin_f_GEB >= 100 & zMax_f_GEB <300 ~ "100-300",
-#     !(is.na(StnCode)) & zMin_f_GEB >= 300 & zMax_f_GEB <700 ~ "300-700")
-#   )
+# Comparision between two bathy data sources, at least for strata assignments
+# ETOPO vs. GEBCO: 196/12995 (1.5%)
+# Comparison with strata from contours (v.2018)
+# ETOPO: 1455/12995 (11.2%) are different
+# GEBCO: 1523/12995 (11.7%) are different
+# Comparison with strata from NGDC CRM bathy (v.2018)
+# ETOPO: 1920/12995 (14.8%) are different
+# GEBCO: 1977/12995 (15.2%) are different
+# Comparison between all three data sources
+# 11/12995 (0.1%) have all three strata values unequal
 
 # Show table summary
 summary(gridNEP)
