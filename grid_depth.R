@@ -119,15 +119,15 @@ gridNEP <-
     !(is.na(StnCode)) & zAvg_f_GEB >= 300 & zAvg_f_GEB <700 ~ "300-700")
   )
 # Comparision between two bathy data sources, at least for strata assignments
-# ETOPO vs. GEBCO: 196/12995 (1.5%)
+# ETOPO vs. GEBCO: 196/12996 (1.5%) are unequal; span entire coast
 # Comparison with strata from contours (v.2018)
-# ETOPO: 1455/12995 (11.2%) are different
-# GEBCO: 1523/12995 (11.7%) are different
+# ETOPO: 1456/12996 (11.2%) are different; tend to be on strata boundaries
+# GEBCO: 1524/12996 (11.7%) are different; tend to be on strata boundaries
 # Comparison with strata from NGDC CRM bathy (v.2018)
-# ETOPO: 1920/12995 (14.8%) are different
-# GEBCO: 1977/12995 (15.2%) are different
+# ETOPO: 1920/12996 (14.8%) are different; tend to be on strata boundaries
+# GEBCO: 1977/12996 (15.2%) are different; tend to be on strata boundaries
 # Comparison between all three data sources
-# 11/12995 (0.1%) have all three strata values unequal
+# 11/12996 (<0.1%) have all three strata values unequal; tend to be in high slope areas
 
 # Show table summary
 summary(gridNEP)
